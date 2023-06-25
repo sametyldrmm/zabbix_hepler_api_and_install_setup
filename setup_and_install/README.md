@@ -33,7 +33,8 @@ Burada, Network Manager aracılığıyla static IP ayarlama işlemi de yapabilir
 
 # Zabbix Kurulumu
 
-Bu bölümde, Zabbix kurulumunu gerçekleştirmek için bir sh dosyası kullanacağız. Bu dosya, [Zabbix indirme](https://www.zabbix.com/download?zabbix=6.4&os_distribution=ubuntu&os_version=22.04&components=server_frontend_agent&db=pgsql&ws=nginx) web sitesindeki komutları içermektedir.
+- Bu bölümde, Zabbix kurulumunu gerçekleştirmek için bir sh dosyası kullanacağız. Bu dosya, [Zabbix indirme](https://www.zabbix.com/download?zabbix=6.4&os_distribution=ubuntu&os_version=22.04&components=server_frontend_agent&db=pgsql&ws=nginx) web sitesindeki komutları içermektedir.
+- Buradaki steden tek farkı php8.1 yerine php8.2 yükleniyor olmasıdır. Eğer apache kurulumu yapacaksanız php8.1 tavsiye edilendir. Ngnix kurduğumuz için 8.2 kurmak hata çıkmaması için tercih edilmesi gerekendir.
 
 **Not:** Bu dosya sadece işi hızlandırmak için kullanılmaktadır. Daha fazla özelleştirme yapmak isterseniz, dosyalar içerisindeki ilgili yerleri değiştirmeniz gerekmektedir.
 
@@ -51,6 +52,7 @@ Bu komutla, Zabbix'in kurulumunun bir kısmı gerçekleştirilecektir.
 - `/etc/zabbix/nginx.conf` dosyasında `listen` ve `server_name` değerlerini istediğiniz şekilde düzenleyin. Örneğin, `listen 8080;` ve `server_name example.com;` gibi.
 
 **Not:** server_name önemli bir veri değildir daha sonrasında çoğunlukla sunucu ip si üzerinden bağlanma işlemi yapılacak.
+
 5. Son olarak, aşağıdaki komutu kullanarak Zabbix bileşenlerini etkinleştirin ve yeniden başlatın:
 
 ``` 
