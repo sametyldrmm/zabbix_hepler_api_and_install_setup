@@ -1,3 +1,5 @@
+#!bin/bash
+
 sudo apt install nginx -y
 sudo apt update
 sudo apt install -y postgresql postgresql-contrib
