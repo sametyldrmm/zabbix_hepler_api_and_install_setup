@@ -56,7 +56,7 @@ Ayrıca panel kullanmadan api istek scriptlerini kullanmak istersek.
 ### Resimlerle adım adım bir kullanım örnek
             ****EKLENECEK****
 ## Örnek kullanım alanına bağlı olarak kod yazımı ve hazır parse göre kullanım örneği
-
+            ****EKLENECEK****
 ## Buglar
 - Eğer terminal boyutu belirli miktarın altında olursa seçenekler tam gözükmeyebiliyor. (Kütüphane kaynaklı problem)
 - En alttaki seçenekte "Devam" yazmasa bile seçtiğinizde Sanki devam seçilmiş gibi davranıyor (1 satır değiştir çözülsün problemi)
