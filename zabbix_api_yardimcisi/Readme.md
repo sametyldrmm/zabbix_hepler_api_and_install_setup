@@ -59,7 +59,7 @@ Ayrıca panel kullanmadan api istek scriptlerini kullanmak istersek.
             ****EKLENECEK****
 ## Buglar
 - Eğer terminal boyutu belirli miktarın altında olursa seçenekler tam gözükmeyebiliyor. (Kütüphane kaynaklı problem)
-- En alttaki seçenekte "Devam" yazmasa bile seçtiğinizde Sanki devam seçilmiş gibi davranıyor (1 satır değiştir çözülsün problemi)
+- En alttaki seçenekte "Devam" yazmasa bile seçtiğinizde Sanki devam seçilmiş gibi davranıyor -Çözüldü
 
 ## Eklenecek/Değiştirilecek şeyler
 ### Postgresql ile ilgili eklenecek şeyler
@@ -69,9 +69,10 @@ Ayrıca panel kullanmadan api istek scriptlerini kullanmak istersek.
 - Config dosyası eklenecek.
 - Diğer parametreler ve parametrelere ait argümanlar farklı paneller olarak eklenecek.
 - Error handling işlemleri postgresql içerisinde yada /var/log dosyası içersinde oluşturulacak bir dosya içersinde saklanmalıdır.
+- Bir branch oluşturulup sadece en son çalışan verisyonun githubda görüntülenmesi sağlanacak.
   
 ## Değiştirilecek şeyler
 - Buglar düzeltiecek.
-- Şuanda host_listeleme ve get_item farklı 2 dosya olarak bulunuyor. Bu sistem değiştirilip tek bir koda parametre verilecek şekilde değiştirilecek get_itemsin içindeki yapı buna uygun dizayn edildi. Diğer methodları ekleme noktası için öncelikle yapılması gerekilen bir şeydir.
-- Çıktı formatı değiştirme get_itemsin içersindeki yapı farklı türde output vermememe izin verecek kütüphane ve fonksiyonlar kullanırak doğru bir şekilde dizayn edildi.
+- Şuanda host_listeleme ve get_item farklı 2 dosya olarak bulunuyor. Bu sistem değiştirilip tek bir koda parametre verilecek şekilde değiştirilecek get_itemsin içindeki yapı buna uygun dizayn edildi. Diğer methodları ekleme noktası için öncelikle yapılması gerekilen bir şeydir. (YAPILDI FAKAT PANELDE DEĞİŞİKLİK YAPILMADI PANELDE DEĞİŞİKLİK YAPILNCA SİLİNECEK)
+- Çıktı formatı değiştirme get_itemsin içersindeki yapı farklı türde output vermememe izin verecek kütüphane ve fonksiyonlar kullanırak doğru bir şekilde dizayn edildi. (PLAN YAPILDI)
 
