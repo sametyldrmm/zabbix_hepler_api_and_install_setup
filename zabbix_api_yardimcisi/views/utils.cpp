@@ -97,7 +97,7 @@ std::vector<std::string> secim_paneli(std::string data,std::string baslik) {
                 break;
             case 10:
                 clear();
-                if (secim == bitis_index - 1) {
+                if (secim == bitis_index - 1 && mevcut_sayfa == sayfa_sayisi) {
                     control = false;
                     break;
                 }

@@ -17,17 +17,24 @@ type ItemGetRequest struct {
 	ID      int         `json:"id"`
 }
 
+type Config struct {
+	URL           string
+	Method        string
+	Authorization string
+	ContentType   string
+}
+
 func main() {
 	envFile := "env.txt"
-
+	var method_str string
 	// Değerleri env.txt dosyasından oku
-	url, method, authorization, contentType, err := readEnvFile(envFile)
+	config, err := readEnvFile(envFile)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	itemParams, err := getItemParamsFromArguments(os.Args)
+	method_str, itemParams, err := getItemParamsFromArguments(os.Args)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -35,7 +42,7 @@ func main() {
 
 	itemGetRequest := ItemGetRequest{
 		JSONRPC: "2.0",
-		Method:  "item.get",
+		Method:  method_str,
 		Params:  itemParams,
 		ID:      1,
 	}
@@ -43,13 +50,13 @@ func main() {
 	payload := strings.NewReader(itemGetRequest.String())
 
 	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
+	req, err := http.NewRequest(config.Method, config.URL, payload)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	req.Header.Add("Authorization", authorization)
-	req.Header.Add("Content-Type", contentType)
+	req.Header.Add("Authorization", config.Authorization)
+	req.Header.Add("Content-Type", config.ContentType)
 
 	res, err := client.Do(req)
 	if err != nil {
@@ -112,10 +119,10 @@ func main() {
 	}
 }
 
-func readEnvFile(file string) (string, string, string, string, error) {
+func readEnvFile(file string) (Config, error) {
 	envData, err := ioutil.ReadFile(file)
 	if err != nil {
-		return "", "", "", "", err
+		return Config{}, err
 	}
 
 	envLines := strings.Split(string(envData), "\n")
@@ -132,18 +139,27 @@ func readEnvFile(file string) (string, string, string, string, error) {
 	// Content-Type değerini oku
 	contentType := strings.TrimSpace(envLines[3])
 
-	return url, method, authorization, contentType, nil
+	config := Config{
+		URL:           url,
+		Method:        method,
+		Authorization: authorization,
+		ContentType:   contentType,
+	}
+
+	return config, nil
 }
 
-func getItemParamsFromArguments(args []string) (interface{}, error) {
+func getItemParamsFromArguments(args []string) (string, interface{}, error) {
 	var hostIDs []string
 	var output []string
 	var itemIDs []string
+	var method_str string
+	var limits string = ""
 
 	for _, arg := range args[1:] {
 		parts := strings.SplitN(arg, ":", 2)
 		if len(parts) != 2 {
-			return nil, fmt.Errorf("Geçersiz argüman formatı: %s", arg)
+			return "", nil, fmt.Errorf("Geçersiz argüman formatı: %s", arg)
 		}
 
 		key := strings.TrimSpace(parts[0])
@@ -156,8 +172,12 @@ func getItemParamsFromArguments(args []string) (interface{}, error) {
 			output = strings.Split(value, ",")
 		case "itemids":
 			itemIDs = strings.Split(value, ",")
+		case "method":
+			method_str = value
+		case "limit":
+			limits = value
 		default:
-			return nil, fmt.Errorf("Bilinmeyen argüman: %s", key)
+			return "", nil, fmt.Errorf("Bilinmeyen argüman: %s", key)
 		}
 	}
 
@@ -171,8 +191,11 @@ func getItemParamsFromArguments(args []string) (interface{}, error) {
 	if len(itemIDs) > 0 {
 		itemParams["itemids"] = itemIDs
 	}
-
-	return itemParams, nil
+	if limits != "" {
+		itemParams["limit"] = limits
+		limits = ""
+	}
+	return method_str, itemParams, nil
 }
 
 func (r ItemGetRequest) String() string {
