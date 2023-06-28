@@ -68,7 +68,8 @@ Ayrıca panel kullanmadan api istek scriptlerini kullanmak istersek.
 - Şuanda item_alt_basliklar.txt de depolanan veri postgresql kullanılarak depolanacak. Program her çalıştırıldığında güncellenecek şekilde bir kodda eklenecek.
 - Config dosyası eklenecek.
 - Diğer parametreler ve parametrelere ait argümanlar farklı paneller olarak eklenecek.
-
+- Error handling işlemleri postgresql içerisinde yada /var/log dosyası içersinde oluşturulacak bir dosya içersinde saklanmalıdır.
+  
 ## Değiştirilecek şeyler
 - Buglar düzeltiecek.
 - Şuanda host_listeleme ve get_item farklı 2 dosya olarak bulunuyor. Bu sistem değiştirilip tek bir koda parametre verilecek şekilde değiştirilecek get_itemsin içindeki yapı buna uygun dizayn edildi. Diğer methodları ekleme noktası için öncelikle yapılması gerekilen bir şeydir.
