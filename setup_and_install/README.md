@@ -63,3 +63,35 @@ systemctl restart zabbix-server zabbix-agent nginx php8.2-fpm
 systemctl enable zabbix-server zabbix-agent nginx php8.2-fpm
 ``` 
 Bu adımları izleyerek Zabbix kurulumunu gerçekleştirebilirsiniz. 
+
+
+
+### **Not:** Zabbix server bazı özel durumlarda (tam olarak bilemiyorum) mesala ip değişikliği yada sunucuyu açıp kapatmamız gereken durumlarda aktif hale gelmeyebilir frontendi görebilirsiniz fakat api yardımıyla veri alamazsınız bunun önüne geçebilmek ve programların doğru çalıştığından emin olmak için crontaba bir kural ekleyeceğiz.
+
+```
+sudo vim /usr/local/bin/zabbix-server-check.sh # Çıkabilmek için esc :wq yapmalısınız
+sudo chmod +x /usr/local/bin/zabbix-server-check.sh
+``` 
+
+```
+#!/bin/bash
+
+if ! pgrep zabbix_server >/dev/null; then
+    sudo systemctl start zabbix-server.service
+fi
+
+``` 
+içeriğini eklemelisiniz
+``` 
+crontab -e
+``` 
+Burada en alt satıra
+``` 
+* * * * * /usr/local/bin/zabbix-server-check.sh >/dev/null 2>&1
+``` 
+içeriğii ekleyelim bu satır her 1 dakikada bir çalışmasını sağlayacaktır.
+
+``` 
+systemctl reload cron
+``` 
+komutu ilede crontaba eklediğimiz ifaeyi etkin hale getirebiliriz.
