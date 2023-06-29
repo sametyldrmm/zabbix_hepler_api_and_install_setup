@@ -16,7 +16,7 @@ SOURCES := views/panel.cpp views/utils.cpp
 OBJECTS := $(SOURCES:.cpp=.o)
 
 # Kural: Tüm hedef
-all: ncurses hosts_listele get_items $(TARGET)
+all: ncurses get_items $(TARGET)
 
 # Kural: ncurses kütüphanesini kur
 ncurses:
@@ -29,10 +29,6 @@ ncurses:
 # Kural: Programı derle ve oluşturulan dosyayı taşı
 $(TARGET): $(OBJECTS)
 	$(CC) $^ $(CFLAGS) -o $@
-
-# Hedef: hosts_listele ve get_items
-hosts_listele: controllers/hosts_listele.go
-	go build -o run_program/hosts_listele $<
 
 get_items: controllers/get_items2.go
 	go build -o run_program/get_items $<

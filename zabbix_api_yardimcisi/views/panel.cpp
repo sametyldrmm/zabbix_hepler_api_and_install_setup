@@ -21,8 +21,8 @@ secim_paneli(string(""),string("") + "Bu program, Zabbix API'sini kullanarak eri
 string zabbix_Api_I_O::get_panel_hosts()
 {
     cout << "hostlari host id ,host , status ,name ve isletim sistemi olarak görüntülüyorsunuz: \n";
-    string test = executeCommand("./run_program/hosts_listele");
-    vector<string> host_id = secim_paneli(test,string("hostlari host id ,host , status ,name ve isletim sistemi olarak görüntülüyorsunuz:\n "));
+    string test = executeCommand("./run_program/get_items method:host.get output:hostid,host,name,status");
+    vector<string> host_id = secim_paneli(test,string("hostlari host id ,host , status ,name başliklarinda olarak görüntülüyorsunuz:\n "));
     // host id yi yazdir
     string host_id_str = " hostid:";
     host_id_str = convert_argument_string(host_id,host_id_str);
