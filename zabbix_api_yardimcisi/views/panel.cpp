@@ -1,7 +1,6 @@
 #include "panel.hpp"
 #include "utils.hpp"
 
-
 void zabbix_Api_I_O::Informations_app()
 {
 secim_paneli(string(""),string("") + "Bu program, Zabbix API'sini kullanarak erisilebilecek verilere hizli erisim saglamak icin tasarlanmistir.\n"
@@ -28,10 +27,24 @@ string zabbix_Api_I_O::get_panel_hosts()
     host_id_str = convert_argument_string(host_id,host_id_str);
     return host_id_str;
 }
+string join_rows(vector<vector<string>> &rows)
+{
+    string joined_rows = "";
+    for (auto row : rows)
+    {
+        for (auto column : row)
+        {
+            joined_rows = joined_rows + column + " ";
+        }
+        joined_rows = joined_rows + "\n";
+    }
+    return joined_rows;
+}
 
 vector<string> zabbix_Api_I_O::get_panel_methods()
 {
-    return(secim_paneli(string("items\n") + "triger\n" ,string("Hangi tür verileri görmek istersiniz\n")));
+    DB_table_data.DbLoadTableData("all_methods");
+    return(secim_paneli(join_rows(DB_table_data.rows),string("Hangi tür verileri görmek istersiniz\n")));
 }
 
 string zabbix_Api_I_O::get_output_parameters()
@@ -71,7 +84,7 @@ void zabbix_Api_I_O::view_hosts()
 {
     string host_id_str = get_panel_hosts();
     vector<string> get_values_type = get_panel_methods();
-    
+
     std::string contents = "";
     for (int i = 0; i < get_values_type.size(); i++)
     {
@@ -111,6 +124,7 @@ zabbix_Api_I_O::~zabbix_Api_I_O()
 
 int main()
 {
+ 
     zabbix_Api_I_O zabbix_Api_I_O;
     return 0;
 }

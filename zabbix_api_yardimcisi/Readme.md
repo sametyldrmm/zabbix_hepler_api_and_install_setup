@@ -11,6 +11,11 @@
   - Kullanıcı dostu olması açısından ve terminalde çalışabilmesi hedeflendiği için cpp dili ile bir panellerden oluşan bir arayüz yapılmıştır seçenekler seçebildiğiniz ve seçenekler arasında ok tuşları ile hareket edebildiğiniz bir yapı.
 ### API sorguları
   - Zabbix API ile haberleştirilen kodlar go dili ile yazılmış cpp içerisinde argümanlarla çalışabililen scriptler olarak kullanılmıştır. Amaç daha sonradan bir web arayüzü yapılmak istenirse aynı dosyalar aynı parametrelerle kullanılabilir durumdadır.
+### Veritabanı
+- Veritabanımız PostgreSQL kullanılarak oluşturulmuştur, boyutu küçük olsa da tercih edilen bir seçenektir. Panellerde kullanılacak veriler bu veritabanında saklanacaktır. Veritabanıyla ilgili kodlar models klasörü içerisinde bulunmaktadır.
+#### Veri Toplama
+- **Zabbix API Verileri:** Zabbix API dokümantasyonunu tarayarak, mevcut olan methodlar ve method parametrelerini içeren verileri toplarız.
+- **Brute-Force Yöntemiyle Alınan Veriler:** Şu anda sadece çıktı parametreleri için argümanları almak amacıyla oluşturulan brute-force yöntemiyle elde edilen veriler depolanır. Bu, mevcut argümanları tespit etmek için bir kod parçası kullanarak gerçekleştirilir.
 
 ## İşleyiş
 - Zabbix API Yardımcısı, kullanıcının istediği hostlara ait bilgileri hangi methodlar, parametreler ve parametre argümanlarını kullanılarak görüntülemek istediğini sırasıyla sorarak başlar. Kullanıcı seçenekleri belirledikten sonra, bu seçenekleri kullanarak çalışan programlardan oluşan bir shell script dosyası oluşturulur.
@@ -18,7 +23,7 @@
 - Bu şekilde, hazır scriptler elde ederek Zabbix API'sini daha verimli bir şekilde kullanmayı amaçlamaktadır. Kullanıcılar, API çağrılarıyla ilgili detaylara dikkat etmek zorunda kalmadan, hızlı ve kolay bir şekilde istedikleri sonuçlara ulaşabilirler.
 - Şuan ekli olmasada çıktı türleri olarak parametreli bir şekilde isterseniz csv isterseniz json tarzında çıktılar alınabilmesi sağlanacaktır. Default olarak okuması kolay olacak bir biçimde tablo olarak görüntülenir.
 
-**!!! Şuanda sadece 1 method(get_item) ,3 parametresi (hostid itemid output) kendi içerisindeki argümanlarıyla işlenmiş konumdadır.** 
+** !!! Şuanda sadece tüm methodlar (tek tek bir liste olarak eklenecek) ,4 parametre hostid itemid output limit kendi içerisindeki argümanlarıyla işlenmiş durumdadır.** 
 
 ## Nasıl kullanılır
 ```
@@ -46,11 +51,20 @@ komutlarını çalıştırırak uygulamayı kullanabiliriz ürettiğimiz sh dosy
 
 Ayrıca panel kullanmadan api istek scriptlerini kullanmak istersek.
 ```
-./run_program/hosts_listele # tüm var olan hostları host id ,host , status ,name ve isletim sistemi olrak görüntüler 
-
 ./run_program/get_items hostid:"10084" itemids:"45509,44056" output:"description,status" # 10084 hostid ye sahip hostuna ait 45509,44056 itemid lerine ait description ve status özellikleri ile getirir
 ./run_program/get_items hostid:"" itemids:"" output:"name,description,lastvalue,status" # var olan tüm hostlara ait tüm itemleri sadece name ,description ,lastvalue ve status özellikleri ile getirir
 ./run_program/get_items hostid:"" itemids:"" output:"" # var olan tüm hostlara ait tüm itemleri tüm output parametreleriyle getirir
+./run_program/get_items method:host.get output:hostid,host,name,status
+
+# tüm get yöntemleri için çlaışır durumdadır (Bazı get mothadları için özel durumlar olabilir. ) (Kendi sitesinde var olan bilgiler yakın zamanda güncellenmiş olup. Kendileri bazı hataları gidermişler. Değişen herşeyi kontrol etme şansım ne yazıkki bulunmuyor şuanlık.)
+(Panellerde veya daha sonradan oluşturacağım sql tablolarından doğru parametreleri alabilirsiniz) ()
+
+./run_program/get_items method:trigger.get output:description hostid:10084
+
+./run_program/get_items method:history.get hostid:10084 limit:12 itemids:23662
+
+./run_program/get_items method:trigger.get output:event_name limit:10
+... gibi örnekleri çoğaltmak mümkündür
 ```
 
 ### Resimlerle adım adım bir kullanım örnek
@@ -58,21 +72,21 @@ Ayrıca panel kullanmadan api istek scriptlerini kullanmak istersek.
 ## Örnek kullanım alanına bağlı olarak kod yazımı ve hazır parse göre kullanım örneği
             ****EKLENECEK****
 ## Buglar
-- Eğer terminal boyutu belirli miktarın altında olursa seçenekler tam gözükmeyebiliyor. (Kütüphane kaynaklı problem)
-- En alttaki seçenekte "Devam" yazmasa bile seçtiğinizde Sanki devam seçilmiş gibi davranıyor -Çözüldü
+- Eğer terminal boyutu belirli miktarın altında olursa seçenekler tam gözükmeyebiliyor. **(Kütüphane kaynaklı problem)**
+- En alttaki seçenekte "Devam" yazmasa bile seçtiğinizde Sanki devam seçilmiş gibi davranıyor **(YAPILDI)**
 
 ## Eklenecek/Değiştirilecek şeyler
 ### Postgresql ile ilgili eklenecek şeyler
-- İlk çalıştırmada bu programa özel bir postgresql kullanıcısı ve diğer lazım olan yapıları ekleyecek kodlar eklenecek.
-- Bir postgresql yapısı içerisinde (config dosayasında postgresqle ait kullanılması gerekilen bilgiler için bloklar eklenecek) verileri düzenli aralıklarla çalıştırılıp eklenmesini sağlayacak kod blokları eklenecek. (crontab ı düzenleyecek kod blokları eklenecek)
-- Şuanda item_alt_basliklar.txt de depolanan veri postgresql kullanılarak depolanacak. Program her çalıştırıldığında güncellenecek şekilde bir kodda eklenecek.
-- Config dosyası eklenecek.
-- Diğer parametreler ve parametrelere ait argümanlar farklı paneller olarak eklenecek.
+- İlk çalıştırmada bu programa özel bir postgresql kullanıcısı ve diğer lazım olan yapıları ekleyecek kodlar eklenecek. **(YAPILDI)** Kodlar hazır Makefile eklenmedi
+- Şuanda item_alt_basliklar.txt de depolanan veri postgresql kullanılarak depolanacak. **(YAPILDI)**
+- Veritabanını, program her çalıştırıldığında güncellenecek şekilde bir kodda eklenecek. **(KISMEN YAPILDI)**
+- Config dosyası eklenecek. **(KISMEN YAPILDI)**
+- Diğer parametreler ve parametrelere ait argümanlar farklı paneller olarak eklenecek. **(KISMEN YAPILDI)**
 - Error handling işlemleri postgresql içerisinde yada /var/log dosyası içersinde oluşturulacak bir dosya içersinde saklanmalıdır.
-- Bir branch oluşturulup sadece en son çalışan verisyonun githubda görüntülenmesi sağlanacak.
   
 ## Değiştirilecek şeyler
 - Buglar düzeltiecek.
-- Şuanda host_listeleme ve get_item farklı 2 dosya olarak bulunuyor. Bu sistem değiştirilip tek bir koda parametre verilecek şekilde değiştirilecek get_itemsin içindeki yapı buna uygun dizayn edildi. Diğer methodları ekleme noktası için öncelikle yapılması gerekilen bir şeydir. (YAPILDI FAKAT PANELDE DEĞİŞİKLİK YAPILMADI PANELDE DEĞİŞİKLİK YAPILNCA SİLİNECEK)
-- Çıktı formatı değiştirme get_itemsin içersindeki yapı farklı türde output vermememe izin verecek kütüphane ve fonksiyonlar kullanırak doğru bir şekilde dizayn edildi. (PLAN YAPILDI)
+- Şuanda host_listeleme ve get_item farklı 2 dosya olarak bulunuyor. Bu sistem değiştirilip tek bir koda parametre verilecek şekilde değiştirilecek get_itemsin içindeki yapı buna uygun dizayn edildi. Diğer methodları ekleme noktası için öncelikle yapılması gerekilen bir şeydir. (**YAPILDI)**
+- Çıktı formatı değiştirme get_itemsin içersindeki yapı farklı türde output vermememe izin verecek kütüphane ve fonksiyonlar kullanırak doğru bir şekilde dizayn edildi. **(PLAN YAPILDI)**
 
+#### SQL bağlantıları panele ekleniyor. Tüm panel içeriği genişletiliyor. Tüm methodlar için tüm parametrelerin çalıştırılabilmesi için çok fazla tekrar gerektiren basit kod yazılması gerekiyor. YAPILMAYACAK. Temel kullanım ve en çok ihtiyaç duyabilecekleri kodların kullanımları tek tek anlatılacak. Değerli yazılımcılarımızın bu iş için birer görev alacağına inanacağım.

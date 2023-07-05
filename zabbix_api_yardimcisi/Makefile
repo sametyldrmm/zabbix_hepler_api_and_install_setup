@@ -1,19 +1,19 @@
-# Makefile
-
 # Derleyici
 CC := g++
 
 # Derleme seçenekleri
-CFLAGS := -lncurses
+CFLAGS := -lncurses -lpqxx -lpq
 
 # Derleme hedefi
 TARGET := run_program/panel
 
 # Kaynak dosyaları
-SOURCES := views/panel.cpp views/utils.cpp
+SOURCES := views/panel.cpp views/utils.cpp 
+SOURCES_DB := panels/get_db.cpp
 
 # Nesne dosyaları
 OBJECTS := $(SOURCES:.cpp=.o)
+OBJECTS_DB := $(SOURCES_DB:.cpp=.o)
 
 # Kural: Tüm hedef
 all: ncurses get_items $(TARGET)
@@ -35,7 +35,7 @@ get_items: controllers/get_items2.go
 
 # Temizleme işlemi
 clean:
-	rm -f $(OBJECTS) $(TARGET) run_program/hosts_listele run_program/get_items
+	rm -f $(OBJECTS) $(OBJECTS_DB) $(TARGET) run_program/hosts_listele run_program/get_items
 
 # PHONY hedefleri
 .PHONY: all ncurses clean
