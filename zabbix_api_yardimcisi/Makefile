@@ -9,7 +9,7 @@ TARGET := run_program/panel
 
 # Kaynak dosyaları
 SOURCES := views/panel.cpp views/utils.cpp 
-SOURCES_DB := panels/get_db.cpp
+SOURCES_DB := panels/get_db2.cpp 
 
 # Nesne dosyaları
 OBJECTS := $(SOURCES:.cpp=.o)

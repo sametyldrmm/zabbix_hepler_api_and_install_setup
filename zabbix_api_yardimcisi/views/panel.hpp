@@ -12,11 +12,11 @@
 #include <iterator>
 #include <algorithm>
 #include "../models/get_db.cpp"
-
+#include "../models/get_db2.cpp"
 
 using namespace std;
 
-class zabbix_Api_I_O
+class zabbix_Api_I_O : public DatabaseManager
 {
 private:
     vector<string> Env;
@@ -29,8 +29,8 @@ public:
     void Informations_app();
     string get_panel_hosts();
     vector<string>  get_panel_methods();
-    string get_output_parameters();
-    string get_panel_output_parameters(string baslik);
+    string get_output_parameters(string method);
+    string get_panel_output_parameters(string baslik,string method);
     void create_sh_script(string script_info);
     
     zabbix_Api_I_O();

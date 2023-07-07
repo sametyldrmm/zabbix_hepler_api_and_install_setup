@@ -25,7 +25,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	methods := []string{"item", "trigger", "history", "trend", "graph", "event", "problem", "map", "task", "service", "host", "hostgroup", "template", "templategroup", "valuemap"}
+	methods := []string{"item"}
 	methodDataList := make([]MethodData, 0, len(methods))
 	saveAllMethodsToDatabase(methods, dbConfig)
 	for _, method := range methods {
@@ -83,7 +83,7 @@ func parseTable(doc *goquery.Document) ([]string, [][]string) {
 func filterHeaders(headers []string) []string {
 	filteredHeaders := make([]string, 0)
 	for _, header := range headers {
-		if header != "Description" {
+		if header != "test" {
 			filteredHeaders = append(filteredHeaders, header)
 		}
 	}
@@ -99,7 +99,7 @@ func filterRows(headers []string, rows [][]string) [][]string {
 
 		filteredCells := make([]string, 0)
 		for i, cell := range cells {
-			if headers[i] != "Description" {
+			if headers[i] != "test" {
 				filteredCells = append(filteredCells, cell)
 			}
 		}
@@ -163,7 +163,7 @@ func generateInsertQuery(tableName string, headers []string, row []string) strin
 func generateTableColumns(headers []string) string {
 	columns := make([]string, len(headers))
 	for i, header := range headers {
-		columns[i] = fmt.Sprintf(`"%s" VARCHAR(100)`, strings.ToLower(header))
+		columns[i] = fmt.Sprintf(`"%s" VARCHAR(5000)`, strings.ToLower(header))
 	}
 	return strings.Join(columns, ", ")
 }

@@ -1,13 +1,18 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"text/tabwriter"
+
+	_ "github.com/lib/pq"
 )
 
 type ItemGetRequest struct {
@@ -22,6 +27,23 @@ type Config struct {
 	Method        string
 	Authorization string
 	ContentType   string
+}
+
+type MethodParameter struct {
+	Boolen        []string
+	String        []string
+	Integer       []string
+	ArrayOfObject []string
+	Query         []string
+	Object        []string
+}
+
+type DBConfig struct {
+	Host     string
+	Port     int
+	User     string
+	Password string
+	DBName   string
 }
 
 func main() {
@@ -149,12 +171,17 @@ func readEnvFile(file string) (Config, error) {
 	return config, nil
 }
 
+func if_len(values []string) []string {
+	if values != nil && len(values) > 0 {
+		return values
+	}
+	return nil
+}
+
 func getItemParamsFromArguments(args []string) (string, interface{}, error) {
-	var hostIDs []string
-	var output []string
-	var itemIDs []string
 	var method_str string
-	var limits string = ""
+
+	itemParams := make(map[string]interface{})
 
 	for _, arg := range args[1:] {
 		parts := strings.SplitN(arg, ":", 2)
@@ -164,37 +191,38 @@ func getItemParamsFromArguments(args []string) (string, interface{}, error) {
 
 		key := strings.TrimSpace(parts[0])
 		value := strings.TrimSpace(parts[1])
+		if key == "method" {
+			method_str = value
+			dbConfig, err := readDBConfig("./models/db_config")
+			if err != nil {
+				fmt.Println(err)
+				return "", nil, fmt.Errorf("Veritabanı bağlantı bilgileri okunamadı.")
+			}
+			fmt.Print("Veritabanı bağlantısı kuruluyor...")
+			db := connectToDatabase(dbConfig)
+
+			if db == nil {
+				return "", nil, fmt.Errorf("Veritabanı bağlantısı kurulamadı.")
+			}
+			fmt.Print("Veritabanı bağlan")
+			data, err := getDbTable(db, "nn")
+			fmt.Println(data)
+			disconnectFromDatabase(db)
+			continue
+		}
+		var que_argüments = []string{"hostids", "output", "itemids"}
+		var int_argüments = []string{"limit"}
 
 		switch key {
-		case "hostid":
-			hostIDs = strings.Split(value, ",")
-		case "output":
-			output = strings.Split(value, ",")
-		case "itemids":
-			itemIDs = strings.Split(value, ",")
-		case "method":
-			method_str = value
-		case "limit":
-			limits = value
+		case FindString(que_argüments, key):
+			itemParams[FindString(que_argüments, key)] = strings.Split(value, ",")
+		case FindString(int_argüments, key):
+			itemParams[FindString(int_argüments, key)] = value
 		default:
 			return "", nil, fmt.Errorf("Bilinmeyen argüman: %s", key)
 		}
 	}
 
-	itemParams := make(map[string]interface{})
-	if len(hostIDs) > 0 {
-		itemParams["hostids"] = hostIDs
-	}
-	if len(output) > 0 {
-		itemParams["output"] = output
-	}
-	if len(itemIDs) > 0 {
-		itemParams["itemids"] = itemIDs
-	}
-	if limits != "" {
-		itemParams["limit"] = limits
-		limits = ""
-	}
 	return method_str, itemParams, nil
 }
 
@@ -210,4 +238,108 @@ func (r ItemGetRequest) String() string {
 	b.WriteString(fmt.Sprintf(`"id": %d`, r.ID))
 	b.WriteString(`}`)
 	return b.String()
+}
+
+func FindString(strs []string, target string) string {
+	for _, str := range strs {
+		if str == target {
+			return str
+		}
+	}
+	return "" // Eğer bulunamazsa boş bir dize döndürür
+}
+
+func readDBConfig(filename string) (DBConfig, error) {
+	var config DBConfig
+
+	content, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return config, err
+	}
+
+	lines := strings.Split(string(content), "\n")
+	for _, line := range lines {
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) == 2 {
+			key := strings.TrimSpace(parts[0])
+			value := strings.TrimSpace(parts[1])
+			switch key {
+			case "host":
+				config.Host = value
+			case "port":
+				config.Port = parseInt(value)
+			case "user":
+				config.User = value
+			case "password":
+				config.Password = value
+			case "dbname":
+				config.DBName = value
+			}
+		}
+	}
+
+	return config, nil
+}
+
+func parseInt(s string) int {
+	val, _ := strconv.Atoi(s)
+	return val
+}
+
+func connectToDatabase(dbConfig DBConfig) *sql.DB {
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		dbConfig.Host, dbConfig.Port, dbConfig.User, dbConfig.Password, dbConfig.DBName)
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return db
+}
+
+func getDbTable(db *sql.DB, table string) ([]map[string]interface{}, error) {
+	rows, err := db.Query(fmt.Sprintf("SELECT * FROM %s", table))
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	columns, err := rows.Columns()
+	if err != nil {
+		return nil, err
+	}
+
+	var result []map[string]interface{}
+	for rows.Next() {
+		columnValues := make([]interface{}, len(columns))
+		columnPointers := make([]interface{}, len(columns))
+		for i := range columns {
+			columnPointers[i] = &columnValues[i]
+		}
+		if err := rows.Scan(columnPointers...); err != nil {
+			return nil, err
+		}
+		item := make(map[string]interface{})
+		for i, columnName := range columns {
+			item[columnName] = columnValues[i]
+		}
+		result = append(result, item)
+	}
+
+	return result, nil
+}
+
+func disconnectFromDatabase(db *sql.DB) {
+	db.Close()
+}
+
+func tablePrint(table []map[string]interface{}) {
+	w := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.Debug)
+	for _, row := range table {
+		for _, column := range row {
+			fmt.Fprintf(w, "%v\t", column)
+		}
+		fmt.Fprintln(w)
+	}
+	w.Flush()
 }

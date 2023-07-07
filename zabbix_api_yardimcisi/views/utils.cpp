@@ -8,6 +8,11 @@ vector<string> adv_tokenizer(string s, char del)
 
     while (getline(ss, tmp, del))
     {
+        // tmp içerisinde olan tüm del karakterlerini kaldıralım
+        tmp.erase(remove(tmp.begin(), tmp.end(), del), tmp.end());
+        if(tmp == "")
+            continue;
+        // cout << "sss:" << tmp << endl;
         words.push_back(tmp);
     }
     return words;
@@ -40,7 +45,7 @@ std::string convert_argument_string(vector<string> arg, string arg_key)
     for (int i = 0; i < arg.size(); i++)
     {
         arg_str += arg[i] + ((i < arg.size() - 1) ? "," : "");
-        std::cout << arg[i] << std::endl;
+        // std::cout << arg[i] << std::endl;
     }
     return arg_str;
 }
