@@ -11,7 +11,6 @@
 #include <list>
 #include <iterator>
 #include <algorithm>
-#include "../models/get_db.cpp"
 #include "../models/get_db2.cpp"
 
 using namespace std;
@@ -22,8 +21,6 @@ private:
     vector<string> Env;
     vector<string> User_I_first_split;
     vector<string> output_parametresi;
-protected:
-    TableData DB_table_data;
 public:
     void view_hosts();
     void Informations_app();

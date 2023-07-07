@@ -121,3 +121,35 @@ std::vector<std::string> secim_paneli(std::string data,std::string baslik) {
     endwin();
     return secilen_secenekler;
 }
+
+std::string panel_user_input(string baslik)
+{
+    std::string input_text;
+    initscr();
+    keypad(stdscr, TRUE);
+    bool control = true;
+    int key;
+    while (control)
+    {
+        clear();
+        printw("\t%s\n", baslik.c_str());
+        printw("----------------------------\n");
+        printw("Girdinizi girin: %s", input_text.c_str());
+        refresh();
+        key = getch();
+        switch (key)
+        {
+        case 10:
+            control = false;
+            break;
+        case KEY_BACKSPACE:
+            input_text = input_text.substr(0, input_text.size() - 1);
+            break;
+        default:
+            input_text += key;
+            break;
+        }
+    }
+    endwin();
+    return input_text;
+}

@@ -24,3 +24,5 @@ std::string executeCommand(const std::string &command);
 std::string convert_argument_string(vector<string> arg, string arg_key);
 
 vector<string> secim_paneli(string data,std::string baslik);
+
+std::string panel_user_input(string baslik);

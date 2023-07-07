@@ -12,7 +12,7 @@ string zabbix_Api_I_O::get_panel_hosts()
     string test = executeCommand("./run_program/get_items method:host.get output:hostid,host,name,status");
     vector<string> host_id = secim_paneli(test, string("hostlari host id ,host , status ,name başliklarinda olarak görüntülüyorsunuz:\n "));
     // host id yi yazdir
-    string host_id_str = " hostid:";
+    string host_id_str = " hostids:";
     host_id_str = convert_argument_string(host_id, host_id_str);
     return host_id_str;
 }
@@ -80,7 +80,7 @@ void zabbix_Api_I_O::view_hosts()
         // get_values_method[i] methodu seçiyor
         // type değerini alıcaz
         // Databasemanager ı kullanarak alalım
-
+        string execute_command ;
         // ilk başta aldığımız methodun parametrelerini seçelim
         vector<string> secilecek_method_parametreleri = GetAllColumnValues(get_values_method[i], "parameter");
         // bu parametrelerden hangilerini seçeceğimizi seçelim
@@ -91,35 +91,52 @@ void zabbix_Api_I_O::view_hosts()
             // bu noktadan sonra type türün göre fonksiyon çağırılacak ve parametre argümanları alınacak burası için düşündüğüm şeylerden ilki boolen değerler için
             if(type == "boolean")
             {
-                
+               vector<string> temp = secim_paneli("true\nfalse", "sectiginiz parametre icin boolean bir deger girlilmesi gerekmektedir \n");
+                temp_str = " "+ temp_str + ":" + temp[0];
             }
-            if(type == "string/array" )
+            else if(type == "string/array" )
             {
-
+                temp_str = panel_user_input(" sectiginiz parametre icin string bir deger girlilmesi gerekmektedir \n Panell daha sonra gelistirilecektir \n suan icin string giriniz \n Kontroller eksiktir lütfen düzgün deger giriniz \n ','degerlerinizi karakteri ile ayiriniz \n");
+                temp_str = " " + temp_str + ":" + temp_str;
             }
-            if(type == "integer")
+            else if(type == "integer")
             {
-
+                int temp = atoi( panel_user_input(" sectiginiz parametre icin integer bir deger girlilmesi gerekmektedir \n Kontroller eksiktir lütfen düzgün deger giriniz \n").c_str());
+                temp_str = " " + temp_str + ":" + to_string(temp);
             }
-            if(type == "array of objects")
+            else if(type == "array of objects")
             {
-
+                temp_str = panel_user_input(" sectiginiz parametre array of objects türündedir \n daha yapilmadi \n");
+                temp_str = " " + temp_str + ":" + temp_str;
             }
-            if(type == "query")
+            else if(type == "query")
             {
-
+                temp_str = panel_user_input(" sectiginiz parametre icin string bir deger girlilmesi gerekmektedir \n Panell daha sonra gelistirilecektir \n suan icin string giriniz \n Kontroller eksiktir lütfen düzgün deger giriniz \n ','degerlerinizi karakteri ile ayiriniz \n");
+                temp_str = " " + temp_str + ":" + temp_str;
             }
-            if(type == "object")
+            else if(type == "object")
             {
-
+                string temp_str_key = panel_user_input(" sectiginiz parametre icin string bir deger çifti girlilmesi gerekmektedir \n key giriniz \n");
+                string temp_str_value = panel_user_input(" sectiginiz parametre icin string bir deger çifti girlilmesi gerekmektedir \n value giriniz \n");
+                temp_str = " " + temp_str + ":" + temp_str_key + ":" + temp_str_value;
             }
+            else if(type == "tags")
+            {
+                temp_str = panel_user_input(" sectiginiz parametre tags türündedir \n daha yapilmadi \n");
+            }
+            else
+            {
+                cout << "hata" << endl;
+                return;
+            }
+            execute_command += temp_str + " ";
         }
 
         string output_str;
         // burada güzel bir sistem oturtmalıyız method param
-        output_str = get_panel_output_parameters(string("itemleri görüntülemek icin output parametresi özelliklerini seciniz \n"), get_values_method[i]);
-        cout << "./run_program/get_items" + host_id_str + output_str << "\n";
-        string test2 = executeCommand(string() + "./run_program/get_items" + " method:" + get_values_method[i] + ".get" + host_id_str + output_str);
+        output_str = get_panel_output_parameters(string("itemleri görüntülemek icin output parametresi özelliklerini seciniz \n Özel bir şekilde incelenir önceki baslikte secim yapti iseniz direk geciniz\n"), get_values_method[i]);
+        cout << "./run_program/get_items" + host_id_str + output_str + execute_command << "\n";
+        string test2 = executeCommand(string() + "./run_program/get_items" + " method:" + get_values_method[i] + ".get" + host_id_str + output_str + execute_command);
         // cout << test2 << endl;
 
         vector<string> isim = secim_paneli(test2, string("hazir bir script olarak kaydetmek istediginiz itemleri seciniz bir\n"));
@@ -130,7 +147,7 @@ void zabbix_Api_I_O::view_hosts()
         cout << test3 << endl;
 
         output_str = get_panel_output_parameters(string("itemleri kaydetmek icin output parametresi özelliklerini seciniz \n"), get_values_method[i]);
-        create_sh_script(string() + " method:" + get_values_method[i] + ".get" + host_id_str + output_str + itemids);
+        create_sh_script(string() + " method:" + get_values_method[i] + ".get" + host_id_str + output_str + itemids );
     }
 }
 

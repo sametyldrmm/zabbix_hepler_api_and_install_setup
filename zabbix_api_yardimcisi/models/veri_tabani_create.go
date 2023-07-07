@@ -24,8 +24,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	methods := []string{"item", "trigger", "history", "trend", "graph", "map", "task", "host", "hostgroup", "template", "templategroup", "valuemap"}
 
-	methods := []string{"item"}
 	methodDataList := make([]MethodData, 0, len(methods))
 	saveAllMethodsToDatabase(methods, dbConfig)
 	for _, method := range methods {
@@ -94,7 +94,7 @@ func filterRows(headers []string, rows [][]string) [][]string {
 	filteredRows := make([][]string, 0)
 	for _, cells := range rows {
 		if len(cells) != len(headers) {
-			continue // Geçersiz satırı atla
+			cells = append(cells, "NULL")
 		}
 
 		filteredCells := make([]string, 0)
@@ -120,9 +120,13 @@ func saveToDatabase(methodData MethodData, dbConfig DBConfig) {
 
 	for _, row := range methodData.Rows {
 		// fmt.Print(row, "\n")
+		for i, cell := range row {
+			row[i] = strings.ReplaceAll(cell, "'", "")
+		}
 		insertQuery := generateInsertQuery(methodData.Method, methodData.Headers, row)
 		err := executeQuery(db, insertQuery)
 		if err != nil {
+			fmt.Println(insertQuery)
 			log.Fatal(err)
 		}
 	}

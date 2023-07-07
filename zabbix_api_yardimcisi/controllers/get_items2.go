@@ -69,8 +69,10 @@ func main() {
 		ID:      1,
 	}
 
-	payload := strings.NewReader(itemGetRequest.String())
-
+	// fmt.Println(itemGetRequest.String())
+	request := removeBackslash(itemGetRequest.String())
+	request = request
+	payload := strings.NewReader(request)
 	client := &http.Client{}
 	req, err := http.NewRequest(config.Method, config.URL, payload)
 	if err != nil {
@@ -148,16 +150,12 @@ func readEnvFile(file string) (Config, error) {
 	}
 
 	envLines := strings.Split(string(envData), "\n")
-
 	// URL değerini oku
 	url := strings.TrimSpace(envLines[0])
-
 	// Method değerini oku
 	method := strings.TrimSpace(envLines[1])
-
 	// Authorization değerini oku
 	authorization := strings.TrimSpace(envLines[2])
-
 	// Content-Type değerini oku
 	contentType := strings.TrimSpace(envLines[3])
 
@@ -167,7 +165,6 @@ func readEnvFile(file string) (Config, error) {
 		Authorization: authorization,
 		ContentType:   contentType,
 	}
-
 	return config, nil
 }
 
@@ -180,7 +177,7 @@ func if_len(values []string) []string {
 
 func getItemParamsFromArguments(args []string) (string, interface{}, error) {
 	var method_str string
-
+	var methodParameter MethodParameter
 	itemParams := make(map[string]interface{})
 
 	for _, arg := range args[1:] {
@@ -198,26 +195,30 @@ func getItemParamsFromArguments(args []string) (string, interface{}, error) {
 				fmt.Println(err)
 				return "", nil, fmt.Errorf("Veritabanı bağlantı bilgileri okunamadı.")
 			}
-			fmt.Print("Veritabanı bağlantısı kuruluyor...")
 			db := connectToDatabase(dbConfig)
 
 			if db == nil {
 				return "", nil, fmt.Errorf("Veritabanı bağlantısı kurulamadı.")
 			}
-			fmt.Print("Veritabanı bağlan")
-			data, err := getDbTable(db, "nn")
-			fmt.Println(data)
+			data, err := getDbTable(db, strings.Split(method_str, ".")[0])
+			methodParameter = getMethodParameterArgClassificition(data)
 			disconnectFromDatabase(db)
 			continue
 		}
-		var que_argüments = []string{"hostids", "output", "itemids"}
-		var int_argüments = []string{"limit"}
 
 		switch key {
-		case FindString(que_argüments, key):
-			itemParams[FindString(que_argüments, key)] = strings.Split(value, ",")
-		case FindString(int_argüments, key):
-			itemParams[FindString(int_argüments, key)] = value
+		case FindString(methodParameter.Query, key):
+			itemParams[FindString(methodParameter.Query, key)] = strings.Split(value, ",")
+		case FindString(methodParameter.Integer, key):
+			itemParams[FindString(methodParameter.Integer, key)] = parseInt(value)
+		case FindString(methodParameter.String, key):
+			itemParams[FindString(methodParameter.String, key)] = strings.Split(value, ",")
+		case FindString(methodParameter.Boolen, key):
+			itemParams[FindString(methodParameter.Boolen, key)] = (value == "true")
+		// case FindString(methodParameter.ArrayOfObject, key):			//Yapılmadı bir tek tags var onunda bir örneği yok
+		// 	itemParams[FindString(methodParameter.ArrayOfObject, key)] = value
+		case FindString(methodParameter.Object, key):
+			itemParams[FindString(methodParameter.Object, key)] = getJson(value)
 		default:
 			return "", nil, fmt.Errorf("Bilinmeyen argüman: %s", key)
 		}
@@ -342,4 +343,60 @@ func tablePrint(table []map[string]interface{}) {
 		fmt.Fprintln(w)
 	}
 	w.Flush()
+}
+
+func getMethodParameterArgClassificition(table []map[string]interface{}) MethodParameter {
+	var methodParameter MethodParameter
+	for _, row := range table {
+		switch row["type"] {
+		case "string/array":
+			methodParameter.String = append(methodParameter.String, row["parameter"].(string))
+		case "integer":
+			methodParameter.Integer = append(methodParameter.Integer, row["parameter"].(string))
+		case "boolean":
+			methodParameter.Boolen = append(methodParameter.Boolen, row["parameter"].(string))
+		case "array of objects":
+			methodParameter.ArrayOfObject = append(methodParameter.ArrayOfObject, row["parameter"].(string))
+		case "object":
+			methodParameter.Object = append(methodParameter.Object, row["parameter"].(string))
+		case "query":
+			methodParameter.Query = append(methodParameter.Query, row["parameter"].(string))
+		}
+	}
+	return methodParameter
+}
+
+func getJson(data string) string {
+	result := parseStringToJSON(data)
+	jsonBytes, err := json.Marshal(result)
+
+	if err != nil {
+		fmt.Println("JSON marshaling error:", err)
+		return ""
+	}
+
+	jsonString := string(jsonBytes)
+	return jsonString
+}
+
+func parseStringToJSON(input string) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	parts := strings.Split(input, "0")
+	for _, part := range parts {
+		keyValue := strings.Split(part, ":")
+		key := keyValue[0]
+		args := keyValue[1]
+		result[key] = args
+	}
+
+	return result
+}
+
+func removeBackslash(str string) string {
+	result := strings.ReplaceAll(str, "\\\"", "\"")
+	result = strings.ReplaceAll(result, "\"{", "{")
+	result = strings.ReplaceAll(result, "}\"}", "}}")
+	result = strings.ReplaceAll(result, "\"}\"", "\"}")
+	return result
 }
