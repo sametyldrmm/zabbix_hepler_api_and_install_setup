@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -55,7 +57,7 @@ func main() {
 		return
 	}
 
-	method, itemParams, err := getItemParamsFromArguments(os.Args)
+	format, method, itemParams, err := getItemParamsFromArguments(os.Args)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -68,10 +70,34 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-
-	processResponse(response)
+	printterResponse(response, format)
 }
 
+func printterResponse(response map[string]interface{}, format string) {
+	// json formatı
+	if format == "json" {
+		jsonData, err := json.MarshalIndent(response, "", "  ")
+		if err != nil {
+			fmt.Println("JSON oluşturulamadı:", err)
+			return
+		}
+		fmt.Println(string(jsonData))
+	}
+	if format == "csv" {
+		// CSV formatına dönüştürme işlemleri
+		csvData, err := convertToCSV(response["result"])
+		if err != nil {
+			fmt.Println("CSV oluşturulamadı:", err)
+			return
+		}
+		fmt.Println(csvData)
+	}
+	// tablo formatı
+	if format == "table" {
+		processResponse(response)
+	}
+
+}
 func readEnvFile(file string) (Config, error) {
 	envData, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -88,23 +114,23 @@ func readEnvFile(file string) (Config, error) {
 	}, nil
 }
 
-func getItemParamsFromArguments(args []string) (string, interface{}, error) {
+func getItemParamsFromArguments(args []string) (string, string, interface{}, error) {
 	method, err := extractMethodFromArguments(args)
 	if err != nil {
-		return "", nil, err
+		return "", "", nil, err
 	}
 
 	methodParameter, err := getMethodParameterFromDB(method)
 	if err != nil {
-		return "", nil, fmt.Errorf("Veritabanı bağlantı bilgileri okunamadı.")
+		return "", "", nil, fmt.Errorf("Veritabanı bağlantı bilgileri okunamadı.")
 	}
 
-	itemParams, err := extractParamsFromArguments(args, methodParameter)
+	formatter, itemParams, err := extractParamsFromArguments(args, methodParameter)
 	if err != nil {
-		return "", nil, err
+		return "", "", nil, err
 	}
 
-	return method, itemParams, nil
+	return formatter, method, itemParams, nil
 }
 
 func extractMethodFromArguments(args []string) (string, error) {
@@ -121,16 +147,18 @@ func extractMethodFromArguments(args []string) (string, error) {
 	return strings.TrimSpace(parts[1]), nil
 }
 
-func extractParamsFromArguments(args []string, methodParameter MethodParameter) (map[string]interface{}, error) {
+func extractParamsFromArguments(args []string, methodParameter MethodParameter) (string, map[string]interface{}, error) {
 	itemParams := make(map[string]interface{})
-
+	formatter := "table"
 	for _, arg := range args[2:] {
 		key, value, err := extractKeyValueFromArgument(arg)
 		if err != nil {
-			return nil, err
+			return formatter, nil, err
 		}
 
 		switch key {
+		case "format":
+			formatter = value
 		case FindString(methodParameter.Query, key):
 			itemParams[FindString(methodParameter.Query, key)] = strings.Split(value, ",")
 		case FindString(methodParameter.Integer, key):
@@ -142,11 +170,11 @@ func extractParamsFromArguments(args []string, methodParameter MethodParameter) 
 		case FindString(methodParameter.Object, key):
 			itemParams[FindString(methodParameter.Object, key)] = getJson(value)
 		default:
-			return nil, fmt.Errorf("Bilinmeyen argüman: %s", key)
+			return formatter, nil, fmt.Errorf("Bilinmeyen argüman: %s", key)
 		}
 	}
 
-	return itemParams, nil
+	return formatter, itemParams, nil
 }
 
 func extractKeyValueFromArgument(arg string) (string, string, error) {
@@ -504,4 +532,53 @@ func (r ItemGetRequest) String() string {
 	b.WriteString(fmt.Sprintf(`"id": %d`, r.ID))
 	b.WriteString(`}`)
 	return b.String()
+}
+
+func convertToCSV(data interface{}) (string, error) {
+
+	items, ok := data.([]interface{})
+	if !ok {
+		return "", fmt.Errorf("veri dilim (slice) türünde değil")
+	}
+
+	var csvData bytes.Buffer
+	csvWriter := csv.NewWriter(&csvData)
+	var header []string
+	if len(items) > 0 {
+		itemMap, ok := items[0].(map[string]interface{})
+		if !ok {
+			return "", fmt.Errorf("öğe harita (map) türünde değil")
+		}
+
+		for field := range itemMap {
+			header = append(header, field)
+		}
+
+		err := csvWriter.Write(header)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	for _, item := range items {
+		itemMap, ok := item.(map[string]interface{})
+		if !ok {
+			return "", fmt.Errorf("öğe harita (map) türünde değil")
+		}
+		var row []string
+		for _, value := range itemMap {
+			row = append(row, fmt.Sprintf("%v", value))
+		}
+		err := csvWriter.Write(row)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	csvWriter.Flush()
+
+	if err := csvWriter.Error(); err != nil {
+		return "", err
+	}
+	return csvData.String(), nil
 }
