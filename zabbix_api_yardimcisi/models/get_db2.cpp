@@ -17,14 +17,6 @@
     };
 #endif
 
-// struct DatabaseConfig
-// {
-//     std::string host;
-//     std::string port;
-//     std::string user;
-//     std::string password;
-//     std::string dbname;
-// };
 
 class DatabaseManager
 {

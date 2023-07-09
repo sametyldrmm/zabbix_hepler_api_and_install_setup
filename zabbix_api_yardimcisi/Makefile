@@ -2,7 +2,7 @@
 CC := g++
 
 # Derleme seçenekleri
-CFLAGS := -lncurses -lpqxx -lpq
+CFLAGS := -lncurses -lpqxx -lpq -Wall -Wextra -Werror 
 
 # Derleme hedefi
 TARGET := run_program/panel
@@ -30,7 +30,7 @@ ncurses:
 $(TARGET): $(OBJECTS)
 	$(CC) $^ $(CFLAGS) -o $@
 
-get_items: controllers/get_items2.go
+get_items: controllers/get_items.go
 	go build -o run_program/get_items $<
 
 # Temizleme işlemi
