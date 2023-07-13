@@ -145,11 +145,25 @@ sadece kodda oynama yapmak gerekir böyle bir durumda argümanları ':' gibi bir
 - Çıktı formatı değiştirme get_itemsin içersindeki yapı farklı türde output vermememe izin verecek kütüphane ve fonksiyonlar kullanırak doğru bir şekilde dizayn edildi. **(YAPILDI)**
 
 
-### Genel olarak izlenen ve geliştirilmesi için gerekli bilgiler
+### Genel olarak izlenen ve geliştirilebilmesi için gerekli bilgiler
 #### Config ve env dosyaları
+
 ##### env.txt
 - İçerisinde zabbix apisini çalıştırabilmemiz için gerekli bilgiler vardır. Url htttp method contenttype
 - Kodumuzdaki hataları daha sonradan takip edebilmemiz için Bir logpath değişkeni vardır. Bu değişkeni değiştirirek. Log dosyasının nerede oluşturulacağını belirleyebilrisiniz.
+### Models klosörü içersindeki yapılar
 ##### /models/db_config
-- Bu dosyamızda database ile ilgili bilgiler yer almaktadır. Bu dosyadaki bilgileri değiştirmek sh dosyaları dahil herşeyi değiştirecektir. İlk kullanıcı oluştururkende dahil olmak üzere sonradan değiştirmemeye özen gösterin. Eğer gerekirse değiştirmeden önce tüm tabloları silin models içerisinde
-  
+- Bu dosyamızda database ile ilgili bilgiler yer almaktadır. Bu dosyadaki bilgileri değiştirmek sh dosyaları dahil herşeyi değiştirecektir. İlk kullanıcı oluştururkende dahil olmak üzere sonradan değiştirmemeye özen gösterin. Eğer gerekirse değiştirmeden önce tüm tabloları silin models içerisinde deletes_tables.sh çalıştırın daha sonra kullanıcıyı silin ve dosyayı değiştirdikten sonra sırasıyla user_create..sh veri_tabani_create.go çalıştırın.
+
+#### models/Veri_tabani_create.go
+İçerisinde yaklaşık 15 methodu alabilmesi için hazır bir yapı bulunmaktadır. Daha fazlası eklemek çok basitttir. Tüm kodlar entegre olacak şekilde tasarlanmıştır.
+- Web sitesinde hazır olan tablolardan istediğimiz parametreye göre var olan method yöntemlerini ,türlerini ve açıklamalarını çekip gerekli olan veri tabanı işlerini yapar.
+- İlişkisel tablolar kullanımına uygun olacak şekilde tablolar üretilmiştir fakat ilişkisel tablo yapılmamıştır. Daha sonraki geliştirme süreçlerini düşünmek gerekir.
+
+#### models/databaseManager.cpp/hpp
+- Kulllanılması muhtemel sql fonksiyonları
+
+### Controllers klosörü içersindeki yapılar
+#### get_items.go
+- Yapı olabildiğince her argümanı çalıştırabilecek şekilde tasarlanmıştır.
+- 
