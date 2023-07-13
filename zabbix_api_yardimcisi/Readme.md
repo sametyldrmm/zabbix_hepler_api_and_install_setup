@@ -118,7 +118,8 @@ sadece kodda oynama yapmak gerekir böyle bir durumda argümanları ':' gibi bir
 - Yapılmadı
      
 ### Resimlerle adım adım bir Panel kullanım örneği
-            ****EKLENECEK****
+## PNG Dosyaları
+Resimler png dosyasındadır. Örnek kullanıma oradan bakabilirsiniz.
 
 # Geliştiriciler için notlar
 - Bu aşamayı programın geliştirmek istediğim adımlarını, aşamalarını yazarak ilerleyeceğim.
