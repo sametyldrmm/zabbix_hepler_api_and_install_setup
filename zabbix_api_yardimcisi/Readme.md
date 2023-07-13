@@ -146,6 +146,7 @@ sadece kodda oynama yapmak gerekir böyle bir durumda argümanları ':' gibi bir
 
 
 ### Genel olarak izlenen ve geliştirilebilmesi için gerekli bilgiler
+##### Sadece geliştiricilerin gözden kaçırabilecei noktalara odaklanılacaktır.
 #### Config ve env dosyaları
 
 ##### env.txt
@@ -170,3 +171,10 @@ sadece kodda oynama yapmak gerekir böyle bir durumda argümanları ':' gibi bir
 - Farklı output seçenekleri vardır geliştirilmek istenirse kolay bir şekilde yenileri eklenebilir.
 - Tek başına çalıştırlabilir olması önemsenmiştir farklı bir projede rahat şekilde kullanılabilir.
 
+### Views klosörü içersindeki yapılar
+- Tamamane panel içeriklerine odaklanılmıştır. Aynı sırayı ve algoritmaları takip edilerek çok raha panel yapısı tamamen yapılabilir.
+- Panel.cpp de tek bir durum için bir özel tanımlama vardır. item.get methodu için output panelini detaylı görmek. Eğer panelde ilerlerken item ve output seçeneklerini seçerseniz sadece itemde özel bir tablo görürsünüz. Sebebleri ise
+  1) Var olabilecek output argümanları .Farklı bir biçimde alınır get_items değişkeni tüm outputları gösterecek şekilde limit:1 kullanılarak çalıştırılır. Elimizdeki çıktılardanda, var olabilecek tüm output parametreleri alınır.
+ 2) Bu yöntemi trigger(diğerleri) içinde çalıştırabilsekte birinde baz aldığımız id itemid iken birisinde triggerid olacaktır. Bu durumun algoritmasal bir çözümünü bulduğumda eklenecektir.
+ 3) Bir diğer problem ise karşımıza çıkan panelde http isteklerinin döndürdüğü json verilerinin bir sıra ile veriyi yazdırmamasından kaynaklanır. Çözümü basit gibi görünsede tüm api methodlarına uyarlamak istendiğinde zorlaşır. 2.maddedeki problemle aynı çözüme saihp olacaktır. Bu hata panelin doğru çalışmamasına sebebiyet verir. Çözüm ise herzaman hostid yada itemid gibi şeylerin ilk sırada çıktığından emin olmaktan geçer anca o durumda çalışır.
+ 4) Basit bir şekilde retry tuşu kullanırak şimdilik geçilmiştir eğerki başta hostid triggerid itemid vb bir şey yok ise retry yaparak devam edin
