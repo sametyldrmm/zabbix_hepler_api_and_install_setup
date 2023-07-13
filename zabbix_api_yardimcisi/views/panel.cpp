@@ -166,19 +166,28 @@ void zabbix_Api_I_O::viewAndGetItems(string method)
 
 zabbix_Api_I_O::zabbix_Api_I_O()
 {
-    this->Informations_app();
-    this->view_hosts(); // host seç
-    this->viewAndGetMethods(); // method seç
-    for (auto method : this->methods)
+    try
     {
-        this->viewAndGetMethodParameters(method); // method parametrelerini seç
-        this->viewAndGetMethodsParametersArguments(method); // method parametrlerine uygun argüman parametrelerini seç
-        this->viewAndGetOutputParameters(method); // method parametrlerine uygun output parametrelerini seç 
-        this->viewAndGetItems(method); // itemleri seç// normalde bir önceki fonksiyonda olması gerekir şuan için özel bir konumdadır sadece item için çalışır
+        this->Informations_app();
+        this->view_hosts(); // host seç
+        this->viewAndGetMethods(); // method seç
+        for (auto method : this->methods)
+        {
+            this->viewAndGetMethodParameters(method); // method parametrelerini seç
+            this->viewAndGetMethodsParametersArguments(method); // method parametrlerine uygun argüman parametrelerini seç
+            this->viewAndGetOutputParameters(method); // method parametrlerine uygun output parametrelerini seç 
+            this->viewAndGetItems(method); // itemleri seç// normalde bir önceki fonksiyonda olması gerekir şuan için özel bir konumdadır sadece item için çalışır
+        }
+        // this->executeCommandsConstrucor(); // script içeriğini hazırla
+        this->create_sh_script(); // scripti kaydet        
     }
-    // this->executeCommandsConstrucor(); // script içeriğini hazırla
-    this->create_sh_script(); // scripti kaydet
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        writelog("","","","",e.what());
     }
+    
+}
 
 zabbix_Api_I_O::~zabbix_Api_I_O()
 {
@@ -187,7 +196,6 @@ zabbix_Api_I_O::~zabbix_Api_I_O()
 
 int main()
 {
-
     zabbix_Api_I_O zabbix_Api_I_O;
     
     return 0;

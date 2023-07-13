@@ -20,7 +20,7 @@ type MethodData struct {
 }
 
 func main() {
-	dbConfig, err := readDBConfig("db_config")
+	dbConfig, err := readDBConfig("./models/db_config")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -179,7 +179,7 @@ func saveAllMethodsToDatabase(methods []string, dbConfig DBConfig) {
 	tableName := "all_methods"
 	headers := []string{"method"}
 
-	// Tabloyu oluşturma sorgusu
+	// Tabloyu oluşturma sorgusucolumns
 	createTableQuery := generateCreateTableQuery(tableName, headers)
 	err := executeQuery(db, createTableQuery)
 	if err != nil {

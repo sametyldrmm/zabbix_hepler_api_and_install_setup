@@ -12,9 +12,12 @@
 #include <iterator>
 #include <algorithm>
 #include <ncurses.h> 
+#include <chrono>
+#include <fcntl.h>
+#include <sys/file.h>
+#include <unistd.h>
 
 using namespace std;
-
 // split
 vector<string> adv_tokenizer(string s, char del);
 
@@ -26,3 +29,5 @@ std::string convert_argument_string(vector<string> arg, string arg_key);
 vector<string> secim_paneli(string data,std::string baslik);
 
 std::string panel_user_input(string baslik);
+
+void writelog(string fileName, string functionName ,string id, string extraMessage, string error);

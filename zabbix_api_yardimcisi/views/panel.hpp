@@ -11,7 +11,7 @@
 #include <list>
 #include <iterator>
 #include <algorithm>
-#include "../models/get_db2.cpp"
+#include "../models/databaseManager.hpp"
 
 using namespace std;
 

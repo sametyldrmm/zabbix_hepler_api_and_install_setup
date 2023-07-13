@@ -8,15 +8,13 @@ CFLAGS := -lncurses -lpqxx -lpq -Wall -Wextra -Werror
 TARGET := run_program/panel
 
 # Kaynak dosyaları
-SOURCES := views/panel.cpp views/utils.cpp 
-SOURCES_DB := panels/get_db2.cpp 
+SOURCES := views/panel.cpp views/utils.cpp models/databaseManager.cpp  
 
 # Nesne dosyaları
 OBJECTS := $(SOURCES:.cpp=.o)
-OBJECTS_DB := $(SOURCES_DB:.cpp=.o)
 
 # Kural: Tüm hedef
-all: ncurses get_items $(TARGET)
+all: get_items $(TARGET)
 
 # Kural: ncurses kütüphanesini kur
 ncurses:
@@ -37,5 +35,16 @@ get_items: controllers/get_items.go
 clean:
 	rm -f $(OBJECTS) $(OBJECTS_DB) $(TARGET) run_program/hosts_listele run_program/get_items
 
+firstMake: ncurses
+	# sudo apt install libpqxx-dev
+	# sudo bash models/user_create_permission_databae.sh
+	sudo mkdir /var/log/zabix_api_yardimcisi
+	echo "12"
+	sudo touch /var/log/zabix_api_yardimcisi/all.log
+	go build ./models/veri_tabani_create.go 
+	sudo ./veri_tabani_create
+	rm -rf ./veri_tabani_create
+
+re : clean all
 # PHONY hedefleri
-.PHONY: all ncurses clean
+.PHONY: all ncurses clean firstMake re

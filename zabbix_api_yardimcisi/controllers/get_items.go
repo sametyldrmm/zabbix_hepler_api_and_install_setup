@@ -13,9 +13,14 @@ import (
 	"strconv"
 	"strings"
 	"text/tabwriter"
+	"time"
 
 	_ "github.com/lib/pq"
+
+	"github.com/gofrs/flock"
 )
+
+var flockPath string
 
 type ItemGetRequest struct {
 	JSONRPC string      `json:"jsonrpc"`
@@ -54,12 +59,14 @@ func main() {
 	config, err := readEnvFile(envFile)
 	if err != nil {
 		fmt.Println(err)
+		writeLog("get_items", "main", 57, err, "READENV FİLE HATASI")
 		return
 	}
 
 	format, method, itemParams, err := getItemParamsFromArguments(os.Args)
 	if err != nil {
 		fmt.Println(err)
+		writeLog("get_items", "main", 63, err, "GETİTEM PARAMS FROM ARGUMENTS HATASI")
 		return
 	}
 
@@ -68,6 +75,7 @@ func main() {
 	response, err := sendRequest(config, itemGetRequest)
 	if err != nil {
 		fmt.Println(err)
+		writeLog("get_items", "main", 71, err, "createItemGetRequest HATASI")
 		return
 	}
 	printterResponse(response, format)
@@ -78,7 +86,8 @@ func printterResponse(response map[string]interface{}, format string) {
 	if format == "json" {
 		jsonData, err := json.MarshalIndent(response, "", "  ")
 		if err != nil {
-			fmt.Println("JSON oluşturulamadı:", err)
+			fmt.Println(err)
+			writeLog("get_items", "printterResponse", 81, err, "json formatına dönüştürme işlemi basarısız oldu")
 			return
 		}
 		fmt.Println(string(jsonData))
@@ -87,7 +96,8 @@ func printterResponse(response map[string]interface{}, format string) {
 		// CSV formatına dönüştürme işlemleri
 		csvData, err := convertToCSV(response["result"])
 		if err != nil {
-			fmt.Println("CSV oluşturulamadı:", err)
+			fmt.Println(err)
+			writeLog("get_items", "printterResponse", 90, err, "csv formatına dönüştürme işlemi basarısız oldu")
 			return
 		}
 		fmt.Println(csvData)
@@ -96,8 +106,8 @@ func printterResponse(response map[string]interface{}, format string) {
 	if format == "table" {
 		processResponse(response)
 	}
-
 }
+
 func readEnvFile(file string) (Config, error) {
 	envData, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -105,13 +115,30 @@ func readEnvFile(file string) (Config, error) {
 	}
 
 	envLines := strings.Split(string(envData), "\n")
+	config := Config{}
+	for _, line := range envLines {
+		parts := strings.SplitN(line, "=", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
 
-	return Config{
-		URL:           strings.TrimSpace(envLines[0]),
-		Method:        strings.TrimSpace(envLines[1]),
-		Authorization: strings.TrimSpace(envLines[2]),
-		ContentType:   strings.TrimSpace(envLines[3]),
-	}, nil
+		switch key {
+		case "URL":
+			config.URL = value
+		case "HTTPMETHOD":
+			config.Method = value
+		case "AUTHORİZATİON":
+			config.Authorization = value
+		case "CONTENTTYPE":
+			config.ContentType = value
+		case "LOG_PATH":
+			flockPath = value
+		}
+	}
+
+	return config, nil
 }
 
 func getItemParamsFromArguments(args []string) (string, string, interface{}, error) {
@@ -581,4 +608,42 @@ func convertToCSV(data interface{}) (string, error) {
 		return "", err
 	}
 	return csvData.String(), nil
+}
+
+func writeLog(fileName string, funcName string, index int, err error, extraData string) {
+	f := flock.NewFlock(flockPath)
+	for {
+		locked, err := f.TryLock()
+		if err != nil {
+			fmt.Println("Dosya kilitleme hatası:", err)
+			return
+		}
+
+		if locked {
+			file, err := os.OpenFile(flockPath, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0666)
+			if err != nil {
+				fmt.Println("Dosya açılamadı:", err)
+				return
+			}
+			var errText string
+			if err == nil {
+				errText = "nil"
+			} else {
+				errText = err.Error()
+			}
+			timestamp := time.Now().Format("2006-01-02 15:04:05")
+			logText := fmt.Sprintf("%s - DOSYA:%s - FONKSİYON ADİ:%s - SATİR NUMARASİ:%d - EKSTRA BİLGİ:%s - ERROR MESAJI:%s\n", timestamp, fileName, funcName, index, extraData, errText)
+
+			_, err = file.WriteString(logText)
+			if err != nil {
+				fmt.Println("Dosyaya yazı yazılamadı:", err)
+			}
+			file.Close()
+			f.Unlock()
+			break
+		} else {
+			fmt.Println("Dosya başka bir işlem tarafından kilitlenmiş")
+			time.Sleep(1 * time.Second)
+		}
+	}
 }

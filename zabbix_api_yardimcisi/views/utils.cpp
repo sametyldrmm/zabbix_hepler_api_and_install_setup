@@ -12,7 +12,6 @@ vector<string> adv_tokenizer(string s, char del)
         tmp.erase(remove(tmp.begin(), tmp.end(), del), tmp.end());
         if(tmp == "")
             continue;
-        // cout << "sss:" << tmp << endl;
         words.push_back(tmp);
     }
     return words;
@@ -42,10 +41,9 @@ std::string executeCommand(const std::string &command)
 std::string convert_argument_string(vector<string> arg, string arg_key)
 {
     std::string arg_str = arg_key;
-    for (int i = 0; i < arg.size(); i++)
+    for (size_t i = 0; i < arg.size(); i++)
     {
         arg_str += arg[i] + ((i < arg.size() - 1) ? "," : "");
-        // std::cout << arg[i] << std::endl;
     }
     return arg_str;
 }
@@ -152,4 +150,36 @@ std::string panel_user_input(string baslik)
     }
     endwin();
     return input_text;
+}
+
+
+void writelog(string fileName, string functionName ,string id, string extraMessage, string error)
+{
+    auto now = std::chrono::system_clock::now();
+    std::time_t timestamp = std::chrono::system_clock::to_time_t(now);
+    std::string timestampStr = std::ctime(&timestamp);
+    timestampStr.pop_back(); // Ctime'dan gelen son karakteri (\n) kaldır
+    
+    int fd = open("shared_file2.txt", O_RDWR);
+    flock(fd, LOCK_EX);
+
+    // Dosyayı okuma işlemi
+    std::string data;
+    std::ofstream file;
+
+    file.open("shared_file2.txt", std::ios::out | std::ios::app);
+    if (!file) {
+        std::cerr << "Dosya açılamadı." << std::endl;
+        flock(fd, LOCK_UN);
+        close(fd);
+        return;
+    }
+    file << "fileName: " << fileName << " functionName: " << functionName << " id: " << id << " extraMessage: " << extraMessage << " error: " << error << std::endl;
+
+    if (!file) {
+        std::cerr << "Dosyaya yazı yazılamadı." << std::endl;
+    }
+    // Kilidi serbest bırakma ve dosyayı kapatma
+    flock(fd, LOCK_UN);
+    close(fd);
 }
