@@ -52,7 +52,12 @@ sudo apt install make
 
 Komutunu çalıştırınız.
 Daha sonrasında 
-
+### make firstMake ne işe yarar
+Bu komutumuzun görevi gerekli dosyalarımızı indiren kişileri bir çok şeyi yüklemek ile uğraşmalarını engellemek. Bu komut ile 
+- Postgresql ile cpp nin haberleşebilmesi için gerekli kütüphaneyi kurar.
+- Panelin çalışabilmesi için ncurses kütüphanesini kurar.
+- Database işlemleri için kullanıcıyı oluşturur database i oluşturur ve gerekli tabloları içerikleriyle birlikte oluşturur.
+- Golang dilinin ihtiyaç duyacağı bağımlıkları indirir.
 ### Panel ile kullanım
 ```
 make firstMake
@@ -65,9 +70,9 @@ komutlarını çalıştırırak uygulamayı kullanabiliriz ürettiğimiz sh dosy
 - Bu şekildeki bir kullanımda her zaman ilk parametre method:X parametresi olmalıdır. Diğer parametrelerin sırası önemli değildir.
           
 ```
-./run_program/get_items hostid:"10084" itemids:"45509,44056" output:"description,status" # 10084 hostid ye sahip hostuna ait 45509,44056 itemid lerine ait description ve status özellikleri ile getirir
-./run_program/get_items hostid:"" itemids:"" output:"name,description,lastvalue,status" # var olan tüm hostlara ait tüm itemleri sadece name ,description ,lastvalue ve status özellikleri ile getirir
-./run_program/get_items hostid:"" itemids:"" output:"" # var olan tüm hostlara ait tüm itemleri tüm output parametreleriyle getirir
+./run_program/get_items method:host.get hostids:"10084" itemids:"45509,44056" output:"description,status" # 10084 hostid ye sahip hostuna ait 45509,44056 itemid lerine ait description ve status özellikleri ile getirir
+./run_program/get_items method:host.get hostids:"" itemids:"" output:"name,description,lastvalue,status" # var olan tüm hostlara ait tüm itemleri sadece name ,description ,lastvalue ve status özellikleri ile getirir
+./run_program/get_items method:host.get hostids:"" itemids:"" output:"" # var olan tüm hostlara ait tüm itemleri tüm output parametreleriyle getirir
 ./run_program/get_items method:host.get output:hostid,host,name,status
 
 # tüm get yöntemleri için çlaışır durumdadır (Bazı get mothadları için özel durumlar olabilir. ) (Kendi sitesinde var olan bilgiler yakın zamanda güncellenmiş olup. Kendileri bazı hataları gidermişler. Değişen herşeyi kontrol etme şansım ne yazıkki bulunmuyor şuanlık.)
@@ -75,12 +80,43 @@ komutlarını çalıştırırak uygulamayı kullanabiliriz ürettiğimiz sh dosy
 
 ./run_program/get_items method:trigger.get output:description hostid:10084
 
-./run_program/get_items method:history.get hostid:10084 limit:12 itemids:23662
+./run_program/get_items method:history.get hostids:10084 limit:12 itemids:23662
+
+/run_program/get_items method:item.get search:key_:system.cpu.util output:name hostids:10084
 
 ./run_program/get_items method:trigger.get output:event_name limit:10
 ... gibi örnekleri çoğaltmak mümkündür
 ```
+## Method türleri ve parametre çeşitleri
+7 farklı method türü vardır bunlar
+1) boolean 
+2) string/array
+3) integer
+4) array of objects
+5) query
+6) object
+7) tags
+- Bu method türlerinin aldıkları parametreler türlerine göre çeşitlilik göstermekle beraber aynı türde olması aynı argümanları kullanabileceğiniz manasına gelmez.
+- Bu proje açısından anlamanın ve keşfetmenin en zor olduğu alan burasıdır.
+- Kendi sitesindeki veriler yeterli değildir. Tek tek her bir türün bu programda nasıl kullanabileceği anlatılacaktır.
 
+### Kullanım örnekleri
+1) boolean
+   - **method_argümanı:true** yada ** **method_argümanı:false**
+2) string/array
+   - **method_argümanı:arg1,arg2,arg3...**
+3) integer
+   - **method_argümanı:sayi**           # Negatif sayılar yada 0 sayılmaz
+4) array of objects
+   - yapılmadı (Yapı oluşturuldu yakın zamanda eklenecek)
+5) query
+  - **method_argümanı:arg1,arg2,arg3...** 
+6) object
+  - **method_argümanı:key_arg1:value_arg1,key_arg2:value_arg2,,, //bu yapının yanlış olduğunu bildiğim için şimdilik kullanılmamasını daha doğru bulduğumu söylemeliyim gerekli yapı hazır
+sadece kodda oynama yapmak gerekir böyle bir durumda argümanları ':' gibi bir ifadeyle ayırırken "" kullanılması gerekir en başta yapmadığım için üzgünüm eklenecek :( // yapıyı bozamayacak şekilde şimdilik parametre verilebilir    
+7) tags
+- Yapılmadı
+     
 ### Resimlerle adım adım bir Panel kullanım örneği
             ****EKLENECEK****
 
@@ -107,3 +143,13 @@ komutlarını çalıştırırak uygulamayı kullanabiliriz ürettiğimiz sh dosy
 - Buglar düzeltiecek.
 - Şuanda host_listeleme ve get_item farklı 2 dosya olarak bulunuyor. Bu sistem değiştirilip tek bir koda parametre verilecek şekilde değiştirilecek get_itemsin içindeki yapı buna uygun dizayn edildi. Diğer methodları ekleme noktası için öncelikle yapılması gerekilen bir şeydir. (**YAPILDI)**
 - Çıktı formatı değiştirme get_itemsin içersindeki yapı farklı türde output vermememe izin verecek kütüphane ve fonksiyonlar kullanırak doğru bir şekilde dizayn edildi. **(YAPILDI)**
+
+
+### Genel olarak izlenen ve geliştirilmesi için gerekli bilgiler
+#### Config ve env dosyaları
+##### env.txt
+- İçerisinde zabbix apisini çalıştırabilmemiz için gerekli bilgiler vardır. Url htttp method contenttype
+- Kodumuzdaki hataları daha sonradan takip edebilmemiz için Bir logpath değişkeni vardır. Bu değişkeni değiştirirek. Log dosyasının nerede oluşturulacağını belirleyebilrisiniz.
+##### /models/db_config
+- Bu dosyamızda database ile ilgili bilgiler yer almaktadır. Bu dosyadaki bilgileri değiştirmek sh dosyaları dahil herşeyi değiştirecektir. İlk kullanıcı oluştururkende dahil olmak üzere sonradan değiştirmemeye özen gösterin. Eğer gerekirse değiştirmeden önce tüm tabloları silin models içerisinde
+  
