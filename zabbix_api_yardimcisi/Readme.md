@@ -166,4 +166,7 @@ sadece kodda oynama yapmak gerekir böyle bir durumda argümanları ':' gibi bir
 ### Controllers klosörü içersindeki yapılar
 #### get_items.go
 - Yapı olabildiğince her argümanı çalıştırabilecek şekilde tasarlanmıştır.
-- 
+- **Hata yönetimi için **flock** ile var/log içerisinde bulunan dosyamız kontrol edilerek yazdırlır.** Bu önemlidir çünkü herhangi bir geliştirme yapılmak istenirse dosyaya ulaşmaya çalışılırken benzer bir yapı kullanılmalıdır. Cpp kodları içerisindede aynı şekilde yapılmıştır.
+- Farklı output seçenekleri vardır geliştirilmek istenirse kolay bir şekilde yenileri eklenebilir.
+- Tek başına çalıştırlabilir olması önemsenmiştir farklı bir projede rahat şekilde kullanılabilir.
+
