@@ -26,6 +26,14 @@
 ** !!! Şuanda sadece tüm methodlar (tek tek bir liste olarak eklenecek) ,4 parametre hostid itemid output limit kendi içerisindeki argümanlarıyla işlenmiş durumdadır.** 
 
 ## Nasıl kullanılır
+Öncellikle kurulumun bir çok aşamasını otomatikleştirebilmek için make firstMake komutu ile ilerleyeceğiz.
+make firstMake komutunda bulunmayan 2 temel şeyimiz vardır.
+- [Postgresql kurulumu](https://www.digitalocean.com/community/tutorials/how-to-install-postgresql-on-ubuntu-20-04-quickstart)
+- [Go kurulumu ](https://www.digitalocean.com/community/tutorials/how-to-install-go-on-ubuntu-20-04)
+- Makefike kurulumu
+
+Kurulumlarının yapılması gerekir
+  
 ```
 make --version
 
@@ -41,15 +49,21 @@ Buna benzer bir çıktı alamıyorsanız öncellikle make komutunu kullanılabil
 ```
 sudo apt install make
 ```
+
 Komutunu çalıştırınız.
 Daha sonrasında 
+
+### Panel ile kullanım
 ```
+make firstMake
 make
 ./run_program/panel
 ```
 komutlarını çalıştırırak uygulamayı kullanabiliriz ürettiğimiz sh dosyaları output_scripts içerisinde listelenecektir.
 
-Ayrıca panel kullanmadan api istek scriptlerini kullanmak istersek.
+### get_items programı ile kullanım
+- Bu şekildeki bir kullanımda her zaman ilk parametre method:X parametresi olmalıdır. Diğer parametrelerin sırası önemli değildir.
+          
 ```
 ./run_program/get_items hostid:"10084" itemids:"45509,44056" output:"description,status" # 10084 hostid ye sahip hostuna ait 45509,44056 itemid lerine ait description ve status özellikleri ile getirir
 ./run_program/get_items hostid:"" itemids:"" output:"name,description,lastvalue,status" # var olan tüm hostlara ait tüm itemleri sadece name ,description ,lastvalue ve status özellikleri ile getirir
@@ -67,26 +81,29 @@ Ayrıca panel kullanmadan api istek scriptlerini kullanmak istersek.
 ... gibi örnekleri çoğaltmak mümkündür
 ```
 
-### Resimlerle adım adım bir kullanım örnek
+### Resimlerle adım adım bir Panel kullanım örneği
             ****EKLENECEK****
-## Örnek kullanım alanına bağlı olarak kod yazımı ve hazır parse göre kullanım örneği
-            ****EKLENECEK****
+
+# Geliştiriciler için notlar
+- Bu aşamayı programın geliştirmek istediğim adımlarını, aşamalarını yazarak ilerleyeceğim.
+  
 ## Buglar
 - Eğer terminal boyutu belirli miktarın altında olursa seçenekler tam gözükmeyebiliyor. **(Kütüphane kaynaklı problem)**
 - En alttaki seçenekte "Devam" yazmasa bile seçtiğinizde Sanki devam seçilmiş gibi davranıyor **(YAPILDI)**
 
+## Problemler
+- /var/log/zabbix_api_yardimcisi/all.log içerisinde veriler tutulur fakat get_items içerisinde var olan errorler doğru şekilde yazdırılamıyor. 
+  
 ## Eklenecek/Değiştirilecek şeyler
 ### Postgresql ile ilgili eklenecek şeyler
-- İlk çalıştırmada bu programa özel bir postgresql kullanıcısı ve diğer lazım olan yapıları ekleyecek kodlar eklenecek. **(YAPILDI)** Kodlar hazır Makefile eklenmedi
+- İlk çalıştırmada bu programa özel bir postgresql kullanıcısı ve diğer lazım olan yapıları ekleyecek kodlar eklenecek. **(YAPILDI)** 
 - Şuanda item_alt_basliklar.txt de depolanan veri postgresql kullanılarak depolanacak. **(YAPILDI)**
 - Veritabanını, program her çalıştırıldığında güncellenecek şekilde bir kodda eklenecek. **(KISMEN YAPILDI)**
-- Config dosyası eklenecek. **(KISMEN YAPILDI)**
-- Diğer parametreler ve parametrelere ait argümanlar farklı paneller olarak eklenecek. **(KISMEN YAPILDI)**
-- Error handling işlemleri postgresql içerisinde yada /var/log dosyası içersinde oluşturulacak bir dosya içersinde saklanmalıdır.
+- Config dosyası eklenecek. **(YAPILDI)**
+- Diğer parametreler ve parametrelere ait argümanlar farklı paneller olarak eklenecek. **(YAPILDI)** **(EFEKTİF DEĞİL)**
+- Error handling işlemleri postgresql içerisinde yada /var/log dosyası içersinde oluşturulacak bir dosya içersinde saklanmalıdır. **(YAPILDI)** PANEL İÇİN SORUNSUZ GET_İTEMS İÇİN PROBLEMLİ
   
 ## Değiştirilecek şeyler
 - Buglar düzeltiecek.
 - Şuanda host_listeleme ve get_item farklı 2 dosya olarak bulunuyor. Bu sistem değiştirilip tek bir koda parametre verilecek şekilde değiştirilecek get_itemsin içindeki yapı buna uygun dizayn edildi. Diğer methodları ekleme noktası için öncelikle yapılması gerekilen bir şeydir. (**YAPILDI)**
-- Çıktı formatı değiştirme get_itemsin içersindeki yapı farklı türde output vermememe izin verecek kütüphane ve fonksiyonlar kullanırak doğru bir şekilde dizayn edildi. **(PLAN YAPILDI)**
-
-#### SQL bağlantıları panele ekleniyor. Tüm panel içeriği genişletiliyor. Tüm methodlar için tüm parametrelerin çalıştırılabilmesi için çok fazla tekrar gerektiren basit kod yazılması gerekiyor. YAPILMAYACAK. Temel kullanım ve en çok ihtiyaç duyabilecekleri kodların kullanımları tek tek anlatılacak. Değerli yazılımcılarımızın bu iş için birer görev alacağına inanacağım.
+- Çıktı formatı değiştirme get_itemsin içersindeki yapı farklı türde output vermememe izin verecek kütüphane ve fonksiyonlar kullanırak doğru bir şekilde dizayn edildi. **(YAPILDI)**
