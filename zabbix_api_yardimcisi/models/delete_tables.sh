@@ -1,7 +1,7 @@
 #!/bin/bash
-DB_PATH="db_config"
-DB_NAME=$(grep -i "db_name" $DB_PATH | cut -d'=' -f2 | tr -d ' ')
+DB_PATH="./models/db_config"
 
+DB_NAME=$(grep -i "dbname" $DB_PATH | cut -d'=' -f2 | tr -d ' ')
 # PostgreSQL'e yönetici olarak giriş yap
 sudo -u postgres psql << EOF
 

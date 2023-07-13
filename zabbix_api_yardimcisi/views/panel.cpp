@@ -9,10 +9,17 @@ void zabbix_Api_I_O::Informations_app()
 string zabbix_Api_I_O::get_panel_hosts()
 {
     cout << "hostlari host id ,host , status ,name ve isletim sistemi olarak görüntülüyorsunuz: \n";
-    string test = executeCommand("./run_program/get_items method:host.get output:hostid,host,name,status");
-    vector<string> host_id = secim_paneli(test, string("hostlari host id ,host , status ,name başliklarinda olarak görüntülüyorsunuz:\n "));
-    string host_id_str = " hostids:";
-    host_id_str = convert_argument_string(host_id, host_id_str);
+    bool bug = true;
+    while( bug )
+    {
+        string test = executeCommand("./run_program/get_items method:host.get output:hostid,host,name,status");
+        vector<string> host_id = secim_paneli(test+"retry\n", string("hostlari host id ,host , status ,name başliklarinda olarak görüntülüyorsunuz:\n "));
+        if(host_id.size() == 1 && host_id[0] == "retry")
+            continue;
+        string host_id_str = " hostids:";
+        host_id_str = convert_argument_string(host_id, host_id_str);
+        bug = false;
+    }
     return host_id_str;
 }
 
@@ -30,7 +37,17 @@ vector<string> zabbix_Api_I_O::get_panel_methods()
 {
     vector<string> data = GetAllColumnValues("all_methods", "method");
     // DB_table_data.DbLoadTableData("all_methods");
-    return (secim_paneli(join_rows(data), string("Hangi tür verileri görmek istersiniz\n")));
+    bool bug = true;
+    vector<string> secilecek_methodlar;
+    while (bug)
+    {
+        secilecek_methodlar = secim_paneli(join_rows(data)+"retry\n", string("Hangi tür verileri görmek istersiniz\n"));
+        if(secilecek_methodlar.size() == 1 && secilecek_methodlar[0] == "retry")
+            continue;
+        else
+            break;
+    }
+    return secilecek_methodlar;
 }
 
 string zabbix_Api_I_O::get_output_parameters(string method)
@@ -48,9 +65,16 @@ string zabbix_Api_I_O::get_output_parameters(string method)
 string zabbix_Api_I_O::get_panel_output_parameters(string baslik, string method)
 {
     string output_str = " output:";
-    string contents = get_output_parameters(method);
-    // cout << contents << endl;
-    this->output_parametresi = secim_paneli(contents, baslik);
+    bool bug = true;
+    while (bug)
+    {
+        string contents = get_output_parameters(method);
+        this->output_parametresi = secim_paneli(contents+"retry\n", baslik);
+        if(this->output_parametresi.size() == 1 && this->output_parametresi[0] == "retry")
+            continue;
+        else
+            break;
+    }
     output_str = convert_argument_string(this->output_parametresi, output_str);
     return output_str;
 }
@@ -83,7 +107,7 @@ void zabbix_Api_I_O::viewAndGetMethodParameters(string method)
 {
     vector<string> secilecek_method_parametreleri = GetAllColumnValues(method, "parameter");
     // bu parametrelerden hangilerini seçeceğimizi seçelim
-    vector<string> secilecen_method_parametreleri = secim_paneli(join_rows(secilecek_method_parametreleri),method + string("methoduna göre secmeniz gereken parametreler \n"));
+    vector<string> secilecen_method_parametreleri = secim_paneli(join_rows(secilecek_method_parametreleri)+"retry\n",method + string("methoduna göre secmeniz gereken parametreler \n"));
     // seçilen parametreleri map öğemize ekleyelim
     this->method_parametresi[method] = secilecen_method_parametreleri;
 }
@@ -98,28 +122,28 @@ void zabbix_Api_I_O::viewAndGetMethodsParametersArguments(string method)
         // bu noktadan sonra type türün göre fonksiyon çağırılacak ve parametre argümanları alınacak burası için düşündüğüm şeylerden ilki boolen değerler için
         if(type == "boolean")
         {
-           vector<string> temp = secim_paneli("true\nfalse", "sectiginiz parametre icin boolean bir deger girlilmesi gerekmektedir \n");
+           vector<string> temp = secim_paneli("true\nfalse", "sectiginiz "+ temp_str +" parametresi icin boolean bir deger girlilmesi gerekmektedir \n");
             temp_str = " "+ temp_str + ":" + temp[0];
         }
         else if(type == "string/array" )
         {
-            temp_str = panel_user_input(" sectiginiz parametre icin string bir deger girlilmesi gerekmektedir \n Panell daha sonra gelistirilecektir \n suan icin string giriniz \n Kontroller eksiktir lütfen düzgün deger giriniz \n ','degerlerinizi karakteri ile ayiriniz \n");
-            temp_str = " " + temp_str + ":" + temp_str;
+            string temp = panel_user_input(" sectiginiz "+ temp_str +" parametresi icin string bir deger girlilmesi gerekmektedir \n Panell daha sonra gelistirilecektir \n suan icin string giriniz \n Kontroller eksiktir lütfen düzgün deger giriniz \n yazmak istediğiniz değerleri ',' karakteri ile ayiriniz \n");
+            temp_str = " " + temp_str + ":" + temp;
         }
         else if(type == "integer")
         {
-            int temp = atoi( panel_user_input(" sectiginiz parametre icin integer bir deger girlilmesi gerekmektedir \n Kontroller eksiktir lütfen düzgün deger giriniz \n").c_str());
+            int temp = atoi( panel_user_input(" sectiginiz "+ temp_str +" parametresi icin integer bir deger girlilmesi gerekmektedir \n Kontroller eksiktir lütfen düzgün deger giriniz \n").c_str());
             temp_str = " " + temp_str + ":" + to_string(temp);
         }
         else if(type == "array of objects")
         {
-            temp_str = panel_user_input(" sectiginiz parametre array of objects türündedir \n daha yapilmadi \n");
-            temp_str = " " + temp_str + ":" + temp_str;
+            string temp = panel_user_input(" sectiginiz "+ temp_str +" parametre array of objects türündedir \n daha yapilmadi \n");
+            temp_str = " " + temp_str + ":" + temp;
         }
         else if(type == "query")
         {
-            temp_str = panel_user_input(" sectiginiz parametre icin string bir deger girlilmesi gerekmektedir \n Panell daha sonra gelistirilecektir \n suan icin string giriniz \n Kontroller eksiktir lütfen düzgün deger giriniz \n ','degerlerinizi karakteri ile ayiriniz \n");
-            temp_str = " " + temp_str + ":" + temp_str;
+            string temp = panel_user_input(" sectiginiz parametre icin string bir deger girlilmesi gerekmektedir \n Panell daha sonra gelistirilecektir \n suan icin string giriniz \n Kontroller eksiktir lütfen düzgün deger giriniz \n yazmak istediğiniz değerleri ',' karakteri ile ayiriniz \n");
+            temp_str = " " + temp_str + ":" + temp;
         }
         else if(type == "object")
         {
@@ -137,6 +161,7 @@ void zabbix_Api_I_O::viewAndGetMethodsParametersArguments(string method)
             return;
         }
         method_execute_str += temp_str;
+        temp_str = "";
     }
     this->executeCommandsMap[method] = method_execute_str;
 }
@@ -157,7 +182,7 @@ string zabbix_Api_I_O::get_method_items(string method)
 void zabbix_Api_I_O::viewAndGetItems(string method)
 {
     string secilebilecek_itemler = get_method_items(method);
-    vector<string> secilen_items = secim_paneli(secilebilecek_itemler, "suan icin sadece item methodu icin secim yapmaninizin önemi vadir. secilebilecek itemler \n");
+    vector<string> secilen_items = secim_paneli(secilebilecek_itemler+"retry\n", "suan icin sadece item methodu icin secim yapmaninizin önemi vadir. secilebilecek itemler \n");
     if(secilen_items.size() > 0 && method == "item")
     {
         this->executeCommandsMap[method] += convert_argument_string(secilen_items, " itemids:");

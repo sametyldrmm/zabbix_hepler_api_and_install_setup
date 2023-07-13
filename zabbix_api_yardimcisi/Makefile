@@ -36,11 +36,11 @@ clean:
 	rm -f $(OBJECTS) $(OBJECTS_DB) $(TARGET) run_program/hosts_listele run_program/get_items
 
 firstMake: ncurses
-	# sudo apt install libpqxx-dev
-	# sudo bash models/user_create_permission_databae.sh
+	sudo apt install libpqxx-dev
+	sudo bash models/user_create_permission_databae.sh
 	sudo mkdir /var/log/zabix_api_yardimcisi
-	echo "12"
 	sudo touch /var/log/zabix_api_yardimcisi/all.log
+	go mod tidy
 	go build ./models/veri_tabani_create.go 
 	sudo ./veri_tabani_create
 	rm -rf ./veri_tabani_create

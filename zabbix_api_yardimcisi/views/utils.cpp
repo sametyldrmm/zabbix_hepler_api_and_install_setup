@@ -117,6 +117,10 @@ std::vector<std::string> secim_paneli(std::string data,std::string baslik) {
     }
 
     endwin();
+    // seçenekerler içerisinde retry var ise geriye retry döndürüyoruz
+    for ( auto data : secilen_secenekler)
+        if (data == "retry")
+            return {"retry"};
     return secilen_secenekler;
 }
 
