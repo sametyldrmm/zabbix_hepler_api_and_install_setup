@@ -181,11 +181,19 @@ string zabbix_Api_I_O::get_method_items(string method)
 
 void zabbix_Api_I_O::viewAndGetItems(string method)
 {
-    string secilebilecek_itemler = get_method_items(method);
-    vector<string> secilen_items = secim_paneli(secilebilecek_itemler+"retry\n", "suan icin sadece item methodu icin secim yapmaninizin önemi vadir. secilebilecek itemler \n");
-    if(secilen_items.size() > 0 && method == "item")
+    bool retry = true;
+    while (retry)
     {
-        this->executeCommandsMap[method] += convert_argument_string(secilen_items, " itemids:");
+        string secilebilecek_itemler = get_method_items(method);
+        vector<string> secilen_items = secim_paneli(secilebilecek_itemler+"retry\n", "suan icin sadece item methodu icin secim yapmaninizin önemi vadir. secilebilecek itemler \n");
+        if(secilen_items.size() > 0 && secilen_items[0] == "retry")
+            continue;
+        else
+            retry = false;
+        if(secilen_items.size() > 0 && method == "item")
+        {
+            this->executeCommandsMap[method] += convert_argument_string(secilen_items, " itemids:");
+        }
     }
 }
 
@@ -201,7 +209,8 @@ zabbix_Api_I_O::zabbix_Api_I_O()
             this->viewAndGetMethodParameters(method); // method parametrelerini seç
             this->viewAndGetMethodsParametersArguments(method); // method parametrlerine uygun argüman parametrelerini seç
             this->viewAndGetOutputParameters(method); // method parametrlerine uygun output parametrelerini seç 
-            this->viewAndGetItems(method); // itemleri seç// normalde bir önceki fonksiyonda olması gerekir şuan için özel bir konumdadır sadece item için çalışır
+            if (method == "item")
+                this->viewAndGetItems(method); // itemleri seç// normalde bir önceki fonksiyonda olması gerekir şuan için özel bir konumdadır sadece item için çalışır
         }
         // this->executeCommandsConstrucor(); // script içeriğini hazırla
         this->create_sh_script(); // scripti kaydet        
